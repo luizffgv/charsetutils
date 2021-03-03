@@ -1,0 +1,32 @@
+/**
+ * @file
+ * @author Luiz Fernando F. G. Valle (github.com/luizffgv)
+ * @brief Implements paper P1830R1, http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1830r1.pdf
+ * @version 1.0
+ * @date 2021-03-01
+ *
+ * @copyright Copyright (c) 2021
+ */
+
+#ifndef CHARSETUTILS_DEPENDENT_BOOL_VALUE_HPP
+#define CHARSETUTILS_DEPENDENT_BOOL_VALUE_HPP
+
+
+/**
+ * @brief Bool value that is dependent on template parameters
+ *
+ * @tparam value Bool value
+ * @tparam Args Types that the value depend on
+ */
+template <bool value, typename... Args>
+inline constexpr bool dependent_bool_value{value};
+
+/**
+ * @brief Always false bool that is dependent on template parameters
+ *
+ * @tparam Args Types that the value depend on
+ */
+template <typename... Args>
+inline constexpr bool dependent_false{dependent_bool_value<false, Args...>};
+
+#endif // #ifndef CHARSETUTILS_DEPENDENT_BOOL_VALUE_HPP

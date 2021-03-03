@@ -1,0 +1,128 @@
+/*
+    Copyright © 2021 Luiz Fernando F. G. Valle
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+/**
+ * @file
+ * @author Luiz Fernando F. G. Valle (github.com/luizffgv)
+ * @brief TODO
+ * @version 1.0
+ * @date 2021-02-28
+ *
+ * @copyright Copyright (c) 2021
+ */
+
+#ifndef CHARSETUTILS_INCLUDE_STRGENERATOR_HPP
+#define CHARSETUTILS_INCLUDE_STRGENERATOR_HPP
+
+#include <concepts>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
+
+#include "charsets.hpp"
+#include "dependent_bool_value.hpp"
+
+namespace charsetutils
+{
+
+template <std::integral CharsetIndexRange = size_t>
+class StrGenerator
+{
+public:
+    using Format = std::vector<std::variant<CharsetIndexRange, std::string>>;
+
+    class BadFmt : public std::invalid_argument
+    {
+    public:
+        using std::invalid_argument::invalid_argument;
+    };
+
+    StrGenerator(std::vector<Charset> sets, Format fmt);
+
+    void FmtChange(const Format &fmt);
+
+    std::vector<Charset> sets;
+    Format fmt;
+
+private:
+    std::vector<std::pair<CharsetIndexRange, std::size_t>> fmt_data;
+};
+
+
+
+
+
+// Template definitions ----------------------------------------------------- >>
+
+template <std::integral CharsetIndexRange>
+StrGenerator<CharsetIndexRange>::StrGenerator(std::vector<Charset> sets, Format fmt)
+    : sets{sets}
+{
+    FmtChange(std::move(fmt));
+}
+
+template <std::integral CharsetIndexRange>
+void StrGenerator<CharsetIndexRange>::FmtChange(const Format &fmt_new)
+{
+    const std::string func_name{
+        "void charsetutils::Generator<CharsetIndexRange>::FmtChange(const "
+        "Format &fmt_new)"
+    };
+
+    decltype(fmt_data) fmt_data_new;
+
+    for (const auto &elem : fmt_new)
+        std::visit([&fmt_data_new, &func_name](const auto &arg)
+        {
+            using ArgT = std::decay_t<decltype(arg)>;
+
+            if constexpr (std::is_same_v<ArgT, CharsetIndexRange>)
+                fmt_data_new.push_back({arg, 1});
+            else if constexpr (std::is_same_v<ArgT, std::string>)
+            {
+                std::stringstream arg_stream{arg};
+                std::pair<CharsetIndexRange, std::size_t> val;
+
+                char separator;
+
+                arg_stream >> val.first;
+                // if (arg_stream.fail())
+                //  throw BadFmt(func_name + "\nfmt has invalid syntax");
+                arg_stream >> separator;
+                // if (arg_stream.fail() || separator != 'x')
+                //  throw BadFmt(func_name + "\nfmt has invalid syntax");
+                arg_stream >> val.second;
+                // if (arg_stream.fail())
+                //  throw BadFmt(func_name + "\nfmt has invalid syntax");
+
+                fmt_data_new.push_back({val.first, val.second});
+            }
+            else
+                static_assert(dependent_false<ArgT>,
+                              "This lambda should only be instantiated with "
+                              "CharsetIndexRange or std::string as ArgT");
+        }, elem);
+
+    fmt = std::move(fmt_new);
+    fmt_data = std::move(fmt_data_new);
+}
+
+} // namespace charsetutils
+
+#endif // #ifndef CHARSETUTILS_INCLUDE_STRGENERATOR_HPP

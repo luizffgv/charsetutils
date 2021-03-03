@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# Linter compile flags
+compile_flags.txt
+
+# Vim stuff
+*.vim
