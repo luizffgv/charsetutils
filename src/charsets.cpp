@@ -14,6 +14,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <iterator>
 #include <random>
 
 #include "../include/charsetutils/charsets.hpp"
@@ -24,6 +25,23 @@
 
 namespace charsetutils
 {
+
+Charset &operator+=(Charset &lhs, Charset rhs)
+{
+    lhs.insert(lhs.end(), std::make_move_iterator(rhs.begin()),
+                          std::make_move_iterator(rhs.end()));
+
+    return lhs;
+}
+
+Charset operator+(const Charset &lhs, const Charset &rhs)
+{
+    Charset ret = lhs;
+
+    ret += rhs;
+
+    return ret;
+}
 
 const Charset alpha{
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',

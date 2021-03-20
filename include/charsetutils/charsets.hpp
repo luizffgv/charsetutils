@@ -27,6 +27,7 @@
 #ifndef CHARSETUTILS_CHARSETS_HPP
 #define CHARSETUTILS_CHARSETS_HPP
 
+#include <random>
 #include <vector>
 
 
@@ -37,8 +38,13 @@ namespace charsetutils
 {
 
 /// Represents a set of characters.
-using Charset = std::vector<char>;
+class Charset : public std::vector<char>
+{
+    using std::vector<char>::vector;
+};
 
+Charset &operator+=(Charset &lhs, Charset rhs);
+Charset operator+(const Charset &lhs, const Charset &rhs);
 
 /**
  * @brief Gets a random character from a Charset.
